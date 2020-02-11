@@ -18,6 +18,7 @@ export SSE_OPTIONS=""
 export IMAGEMAGICK_OPTIONS=""
 
 # Build zlib
+: '
 cd zlib
 chmod +x ./configure
 $CONFIGURE --static
@@ -41,22 +42,33 @@ cd ../freetype
 $CONFIGURE --disable-shared --without-bzip2 CFLAGS="$FLAGS"
 $MAKE install
 make clean
+
+
+if [ -d "/" ]
+then rm -rf build
+fi
 mkdir build
 cd build
 $CMAKE_COMMAND .. -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_SHARED=off -DCMAKE_DISABLE_FIND_PACKAGE_BZip2=TRUE -DCMAKE_C_FLAGS="$FLAGS"
 $MAKE install
 cd ..
+'
 
+: '
 # Build fontconfig
-cd ../fontconfig
+# cd ../fontconfig
+cd fontconfig
 autoreconf -fiv
 pip install lxml
 pip install six
 $CONFIGURE --enable-libxml2 --enable-static=yes --disable-shared $FONTCONFIG_OPTIONS CFLAGS="$FLAGS"
 $MAKE install
+'
 
+: '
 # Build libjpeg-turbo
-cd ../jpeg
+# cd ../jpeg
+cd /jpeg
 $CMAKE_COMMAND . -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_SHARED=off ${SIMD_OPTIONS} -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="$FLAGS"
 $MAKE install
 
@@ -92,9 +104,12 @@ autoreconf -fiv
 chmod +x ./configure
 $CONFIGURE --disable-shared $SSE_OPTIONS --disable-dec265 --prefix=/usr/local CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
 $MAKE install
+'
 
 # Build libheif
-cd ../libheif
+# This is what fails!
+# cd ../libheif
+cd libheif
 autoreconf -fiv
 chmod +x ./configure
 $CONFIGURE --disable-shared --disable-go --prefix=/usr/local CFLAGS="$FLAGS" CXXFLAGS="$FLAGS" PKG_CONFIG_PATH="$PKG_PATH"
@@ -103,14 +118,19 @@ if [ "$HEIF_HACK" = true ]; then
 fi
 $MAKE install
 
+
+: '
 # Build libraw
-cd ../libraw
+# cd ../libraw
+cd libraw
 chmod +x ./version.sh
 chmod +x ./shlib-version.sh
 autoreconf -fiv
 chmod +x ./configure
 $CONFIGURE --disable-shared --disable-examples --disable-openmp --disable-jpeg --disable-jasper --prefix=/usr/local  CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
 $MAKE install
+'
+
 
 buildImageMagick() {
     local quantum=$1
@@ -131,7 +151,8 @@ buildImageMagick() {
 }
 
 # Build ImageMagick
-cd ../ImageMagick
+# cd ../ImageMagick
+cd ImageMagick
 autoreconf -fiv
 buildImageMagick "Q8"
 buildImageMagick "Q16"
